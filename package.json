@@ -1,6 +1,6 @@
 {
   "name": "redis-dataloader",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "DataLoader Using Redis as a Cache",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/DubFriend/redis-dataloader.git"
+    "url": "https://github.com/tourmalinelabs/redis-dataloader.git"
   },
   "keywords": [
     "DataLoader",
@@ -20,23 +20,23 @@
   "author": "Brian Detering",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DubFriend/redis-dataloader/issues"
+    "url": "https://github.com/tourmalinelabs/redis-dataloader/issues"
   },
-  "homepage": "https://github.com/DubFriend/redis-dataloader#readme",
+  "homepage": "https://github.com/tourmalinelabs/redis-dataloader#readme",
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "dataloader": "^1.2.0",
-    "ioredis": "^3.1.2",
+    "bluebird": "^3.7.2",
+    "dataloader": "^2.0.0",
+    "ioredis": "^4.14.1",
     "json-stable-stringify": "^1.0.1",
-    "lodash": "^4.17.2"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "gulp": "^3.9.1",
     "gulp-mocha": "^3.0.1",
-    "ioredis": "^3.1.2",
-    "redis": "^2.6.3",
-    "sinon": "^1.17.6"
+    "ioredis": "^4.14.1",
+    "redis": "^2.8.0",
+    "sinon": "^8.0.4"
   }
 }
