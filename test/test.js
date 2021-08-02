@@ -114,7 +114,7 @@ module.exports = ({ name, redis }) => {
         expect(this.loader.load()).to.be.rejectedWith(TypeError));
 
       it('should use local cache on second load', () => {
-        this.stubs.redisMGet = sinon.stub(redis, 'mget', (keys, cb) => {
+        this.stubs.redisMGet = sinon.stub(redis, 'mget').callsFake((keys, cb) => {
           cb(null, [JSON.stringify(this.data.json)]);
         });
 
@@ -132,7 +132,7 @@ module.exports = ({ name, redis }) => {
       });
 
       it('should not use in memory cache if option is passed', () => {
-        this.stubs.redisMGet = sinon.stub(redis, 'mget', (keys, cb) => {
+        this.stubs.redisMGet = sinon.stub(redis, 'mget').callsFake((keys, cb) => {
           cb(null, [JSON.stringify(this.data.json)]);
         });
 
@@ -239,7 +239,7 @@ module.exports = ({ name, redis }) => {
       });
 
       it('should use local cache on second load when using custom cacheKeyFn', () => {
-        this.stubs.redisMGet = sinon.stub(redis, 'mget', (keys, cb) => {
+        this.stubs.redisMGet = sinon.stub(redis, 'mget').callsFake((keys, cb) => {
           cb(null, [JSON.stringify(this.data.json)]);
         });
 
