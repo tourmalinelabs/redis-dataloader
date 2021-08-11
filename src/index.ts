@@ -1,8 +1,17 @@
+export {};
+
 const _ = require('lodash');
+
 const Promise = require('bluebird');
+
 const DataLoader = require('dataloader');
+
 const stringify = require('json-stable-stringify');
+
 const IORedis = require('ioredis');
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const self: any = {};
 
 module.exports = fig => {
   const redis = fig.redis;
@@ -45,15 +54,16 @@ module.exports = fig => {
           const fullKey = makeKey(keySpace, key, opt.cacheKeyFn);
           const multi = redis.multi();
           multi.set(fullKey, val);
+
           if (opt.expire) {
             multi.expire(fullKey, opt.expire);
           }
+
           multi.get(fullKey);
           multi.exec((err, replies) => {
             const lastReply = isIORedis
               ? _.last(_.last(replies))
               : _.last(replies);
-
             return err ? reject(err) : parse(lastReply, opt).then(resolve);
           });
         })
@@ -61,9 +71,8 @@ module.exports = fig => {
 
   const rGet = (keySpace, key, opt) =>
     new Promise((resolve, reject) =>
-      redis.get(
-        makeKey(keySpace, key, opt.cacheKeyFn),
-        (err, result) => (err ? reject(err) : parse(result, opt).then(resolve))
+      redis.get(makeKey(keySpace, key, opt.cacheKeyFn), (err, result) =>
+        err ? reject(err) : parse(result, opt).then(resolve)
       )
     );
 
@@ -81,27 +90,28 @@ module.exports = fig => {
 
   const rDel = (keySpace, key, opt) =>
     new Promise((resolve, reject) =>
-      redis.del(
-        makeKey(keySpace, key, opt.cacheKeyFn),
-        (err, resp) => (err ? reject(err) : resolve(resp))
+      redis.del(makeKey(keySpace, key, opt.cacheKeyFn), (err, resp) =>
+        err ? reject(err) : resolve(resp)
       )
     );
 
   return class RedisDataLoader {
-    constructor(ks, userLoader, opt) {
+    constructor (ks, userLoader, opt) {
       const customOptions = [
         'expire',
         'serialize',
         'deserialize',
-        'cacheKeyFn',
+        'cacheKeyFn'
       ];
-      this.opt = _.pick(opt, customOptions) || {};
-      this.opt.cacheKeyFn =
-        this.opt.cacheKeyFn || (k => (_.isObject(k) ? stringify(k) : k));
-      this.keySpace = ks;
-      this.loader = new DataLoader(
+      self.opt = _.pick(opt, customOptions) || {};
+
+      self.opt.cacheKeyFn =
+        self.opt.cacheKeyFn || (k => (_.isObject(k) ? stringify(k) : k));
+
+      self.keySpace = ks;
+      self.loader = new DataLoader(
         keys =>
-          rMGet(this.keySpace, keys, this.opt).then(results =>
+          rMGet(self.keySpace, keys, self.opt).then(results =>
             Promise.map(results, (v, i) => {
               if (v === '') {
                 return Promise.resolve(null);
@@ -109,7 +119,7 @@ module.exports = fig => {
                 return userLoader
                   .load(keys[i])
                   .then(resp =>
-                    rSetAndGet(this.keySpace, keys[i], resp, this.opt)
+                    rSetAndGet(self.keySpace, keys[i], resp, self.opt)
                   )
                   .then(r => (r === '' ? null : r));
               } else {
@@ -119,47 +129,49 @@ module.exports = fig => {
           ),
         _.chain(opt)
           .omit(customOptions)
-          .extend({ cacheKeyFn: this.opt.cacheKeyFn })
+          .extend({
+            cacheKeyFn: self.opt.cacheKeyFn
+          })
           .value()
       );
     }
 
-    load(key) {
+    load (key) {
       return key
-        ? Promise.resolve(this.loader.load(key))
+        ? Promise.resolve(self.loader.load(key))
         : Promise.reject(new TypeError('key parameter is required'));
     }
 
-    loadMany(keys) {
+    loadMany (keys) {
       return keys
-        ? Promise.resolve(this.loader.loadMany(keys))
+        ? Promise.resolve(self.loader.loadMany(keys))
         : Promise.reject(new TypeError('keys parameter is required'));
     }
 
-    prime(key, val) {
+    prime (key, val) {
       if (!key) {
         return Promise.reject(new TypeError('key parameter is required'));
       } else if (val === undefined) {
         return Promise.reject(new TypeError('value parameter is required'));
       } else {
-        return rSetAndGet(this.keySpace, key, val, this.opt).then(r => {
-          this.loader.clear(key).prime(key, r === '' ? null : r);
+        return rSetAndGet(self.keySpace, key, val, self.opt).then(r => {
+          self.loader.clear(key).prime(key, r === '' ? null : r);
         });
       }
     }
 
-    clear(key) {
+    clear (key) {
       return key
-        ? rDel(this.keySpace, key, this.opt).then(() => this.loader.clear(key))
+        ? rDel(self.keySpace, key, self.opt).then(() => self.loader.clear(key))
         : Promise.reject(new TypeError('key parameter is required'));
     }
 
-    clearAllLocal() {
-      return Promise.resolve(this.loader.clearAll());
+    clearAllLocal () {
+      return Promise.resolve(self.loader.clearAll());
     }
 
-    clearLocal(key) {
-      return Promise.resolve(this.loader.clear(key));
+    clearLocal (key) {
+      return Promise.resolve(self.loader.clear(key));
     }
   };
 };
