@@ -5,7 +5,6 @@ const Promise = require('bluebird');
 const DataLoader = require('dataloader');
 const stringify = require('json-stable-stringify');
 const IORedis = require('ioredis');
-const self = {};
 module.exports = fig => {
     const redis = fig.redis;
     const isIORedis = redis instanceof IORedis;
@@ -70,18 +69,18 @@ module.exports = fig => {
                 'deserialize',
                 'cacheKeyFn'
             ];
-            self.opt = _.pick(opt, customOptions) || {};
-            self.opt.cacheKeyFn =
-                self.opt.cacheKeyFn || (k => (_.isObject(k) ? stringify(k) : k));
-            self.keySpace = ks;
-            self.loader = new DataLoader(keys => rMGet(self.keySpace, keys, self.opt).then(results => Promise.map(results, (v, i) => {
+            this.opt = _.pick(opt, customOptions) || {};
+            this.opt.cacheKeyFn =
+                this.opt.cacheKeyFn || (k => (_.isObject(k) ? stringify(k) : k));
+            this.keySpace = ks;
+            this.loader = new DataLoader(keys => rMGet(this.keySpace, keys, this.opt).then(results => Promise.map(results, (v, i) => {
                 if (v === '') {
                     return Promise.resolve(null);
                 }
                 else if (v === null) {
                     return userLoader
                         .load(keys[i])
-                        .then(resp => rSetAndGet(self.keySpace, keys[i], resp, self.opt))
+                        .then(resp => rSetAndGet(this.keySpace, keys[i], resp, this.opt))
                         .then(r => (r === '' ? null : r));
                 }
                 else {
@@ -90,18 +89,18 @@ module.exports = fig => {
             })), _.chain(opt)
                 .omit(customOptions)
                 .extend({
-                cacheKeyFn: self.opt.cacheKeyFn
+                cacheKeyFn: this.opt.cacheKeyFn
             })
                 .value());
         }
         load(key) {
             return key
-                ? Promise.resolve(self.loader.load(key))
+                ? Promise.resolve(this.loader.load(key))
                 : Promise.reject(new TypeError('key parameter is required'));
         }
         loadMany(keys) {
             return keys
-                ? Promise.resolve(self.loader.loadMany(keys))
+                ? Promise.resolve(this.loader.loadMany(keys))
                 : Promise.reject(new TypeError('keys parameter is required'));
         }
         prime(key, val) {
@@ -112,21 +111,21 @@ module.exports = fig => {
                 return Promise.reject(new TypeError('value parameter is required'));
             }
             else {
-                return rSetAndGet(self.keySpace, key, val, self.opt).then(r => {
-                    self.loader.clear(key).prime(key, r === '' ? null : r);
+                return rSetAndGet(this.keySpace, key, val, this.opt).then(r => {
+                    this.loader.clear(key).prime(key, r === '' ? null : r);
                 });
             }
         }
         clear(key) {
             return key
-                ? rDel(self.keySpace, key, self.opt).then(() => self.loader.clear(key))
+                ? rDel(this.keySpace, key, this.opt).then(() => this.loader.clear(key))
                 : Promise.reject(new TypeError('key parameter is required'));
         }
         clearAllLocal() {
-            return Promise.resolve(self.loader.clearAll());
+            return Promise.resolve(this.loader.clearAll());
         }
         clearLocal(key) {
-            return Promise.resolve(self.loader.clear(key));
+            return Promise.resolve(this.loader.clear(key));
         }
     };
 };
