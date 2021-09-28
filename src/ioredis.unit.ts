@@ -1,5 +1,3 @@
-export {};
-
 const Redis = require('ioredis');
 
 require('./index.unit')({

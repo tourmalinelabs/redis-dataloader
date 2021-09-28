@@ -1,19 +1,12 @@
-export {};
-
-const _ = require('lodash');
-
-const Promise = require('bluebird');
-
-const chai = require('chai');
+import _ from 'lodash';
+import chai, { expect } from 'chai';
+import Promise from 'bluebird';
+import createRedisDataLoader from './index';
 
 chai.use(require('chai-as-promised'));
-const { expect } = chai;
 
 const sinon = require('sinon');
-
 const DataLoader = require('dataloader');
-
-const createRedisDataLoader = require('./index');
 
 const self: any = {};
 
