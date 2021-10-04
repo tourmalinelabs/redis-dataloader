@@ -1,16 +1,11 @@
-export {};
-
-const _ = require('lodash');
-
-const Promise = require('bluebird');
-
-const DataLoader = require('dataloader');
+import _ from 'lodash';
+import Promise from 'bluebird';
+import DataLoader from 'dataloader';
 
 const stringify = require('json-stable-stringify');
-
 const IORedis = require('ioredis');
 
-module.exports = fig => {
+const redisDataLoader = fig => {
   const redis = fig.redis;
   const isIORedis = redis instanceof IORedis;
 
@@ -97,7 +92,7 @@ module.exports = fig => {
     keySpace: any;
     loader: any;
 
-    constructor (ks, userLoader, opt) {
+    constructor (ks, userLoader, opt: any = {}) {
       const customOptions = [
         'expire',
         'serialize',
@@ -176,3 +171,6 @@ module.exports = fig => {
     }
   };
 };
+
+module.exports = redisDataLoader;
+export default redisDataLoader;
